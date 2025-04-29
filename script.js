@@ -19,6 +19,7 @@ function getWatchedEpisodes() {
     return JSON.parse(localStorage.getItem('watchedEpisodes') || '{}');
 }
 function markEpisodeWatched(videoId, episodeName) {
+    console.log('[DEBUG] markEpisodeWatched called with:', videoId, episodeName);
     const watched = getWatchedEpisodes();
     if (!watched[videoId]) watched[videoId] = [];
     if (!watched[videoId].includes(episodeName)) {
@@ -28,6 +29,8 @@ function markEpisodeWatched(videoId, episodeName) {
     // Also add to watch history
     if (typeof addToWatchHistory === 'function') {
         addToWatchHistory(videoId, episodeName);
+    } else {
+        console.warn('[DEBUG] addToWatchHistory is not a function!');
     }
 }
 function isEpisodeWatched(videoId, episodeName) {
@@ -1130,24 +1133,33 @@ updateBodyScrollLock();
         }
     }
 
-    // --- Watch History Functions ---
-    function getWatchHistory() {
-        return JSON.parse(localStorage.getItem('watchHistory') || '[]');
-    }
-    function addToWatchHistory(videoId, episodeName) {
-        const history = getWatchHistory();
-        const timestamp = new Date().toISOString();
-        // Avoid duplicate consecutive entries
-        if (history.length > 0) {
-            const last = history[history.length - 1];
-            if (last.videoId === videoId && last.episodeName === episodeName) return;
+// --- Watch History Functions ---
+function getWatchHistory() {
+    return JSON.parse(localStorage.getItem('watchHistory') || '[]');
+}
+function markEpisodeWatched(videoId, episodeName) {
+    console.log('[DEBUG] markEpisodeWatched called with:', videoId, episodeName);
+    addToWatchHistory(videoId, episodeName);
+}
+function addToWatchHistory(videoId, episodeName) {
+    console.log('[DEBUG] addToWatchHistory called with:', videoId, episodeName);
+    const history = getWatchHistory();
+    const timestamp = new Date().toISOString();
+    // Avoid duplicate consecutive entries
+    if (history.length > 0) {
+        const last = history[history.length - 1];
+        if (last.videoId === videoId && last.episodeName === episodeName) {
+            console.log('[DEBUG] Duplicate consecutive entry. Skipping.');
+            return;
         }
-        history.push({ videoId, episodeName, timestamp });
-        // Limit history to 100 items
-        if (history.length > 100) history.shift();
-        localStorage.setItem('watchHistory', JSON.stringify(history));
     }
-    async function renderWatchHistory() {
+    history.push({ videoId, episodeName, timestamp });
+    // Limit history to 100 items
+    if (history.length > 100) history.shift();
+    localStorage.setItem('watchHistory', JSON.stringify(history));
+    console.log('[DEBUG] watchHistory after push:', history);
+}
+async function renderWatchHistory() {
     const MAX_HISTORY = 20;
     const fullHistory = getWatchHistory().slice().reverse(); // Show latest first
     const history = fullHistory.slice(0, MAX_HISTORY);
