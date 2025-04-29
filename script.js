@@ -265,18 +265,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Helper Functions ---
-    function showLoading() {
-        loadingIndicator.style.display = 'block';
-        isLoading = true;
-    }
+    // function showLoading() {
+//     loadingIndicator.style.display = 'block';
+//     isLoading = true;
+// }
 
-    function hideLoading() {
-        loadingIndicator.style.display = 'none';
-        isLoading = false;
-    }
+// function hideLoading() {
+//     loadingIndicator.style.display = 'none';
+//     isLoading = false;
+// }
 
     async function fetchData(params, silent = false) {
-        if (!silent) showLoading();
+    // if (!silent) showLoading();
         // Build query string
         const queryParams = new URLSearchParams(params).toString();
         const targetUrl = `${apiUrl}?${queryParams}`;
@@ -332,8 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        if (!silent) hideLoading();
-        return responseData; // Will be null if all proxies failed
+    // if (!silent) hideLoading();
+    return responseData; // Will be null if all proxies failed
     }
 
     // --- Core Functions ---
