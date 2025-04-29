@@ -944,6 +944,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- The following legacy search/category DOM logic is now handled by Vue and is disabled ---
+    /*
     // Search
     searchButton.addEventListener('click', () => {
         const searchTerm = searchInput.value.trim();
@@ -970,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
             searchButton.click(); // Trigger search on Enter key
         }
     });
+    */
 
     // Video card click
     videoGrid.addEventListener('click', (event) => {
