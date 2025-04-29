@@ -25,18 +25,9 @@ function markEpisodeWatched(videoId, episodeName) {
         watched[videoId].push(episodeName);
         localStorage.setItem('watchedEpisodes', JSON.stringify(watched));
     }
-}
-function isEpisodeWatched(videoId, episodeName) {
-    const watched = getWatchedEpisodes();
-    return watched[videoId] && watched[videoId].includes(episodeName);
-}
-
-function markEpisodeWatched(videoId, episodeName) {
-    const watched = getWatchedEpisodes();
-    if (!watched[videoId]) watched[videoId] = [];
-    if (!watched[videoId].includes(episodeName)) {
-        watched[videoId].push(episodeName);
-        localStorage.setItem('watchedEpisodes', JSON.stringify(watched));
+    // Also add to watch history
+    if (typeof addToWatchHistory === 'function') {
+        addToWatchHistory(videoId, episodeName);
     }
 }
 function isEpisodeWatched(videoId, episodeName) {
@@ -44,7 +35,28 @@ function isEpisodeWatched(videoId, episodeName) {
     return watched[videoId] && watched[videoId].includes(episodeName);
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Watch History Modal Elements
+    const watchHistoryButton = document.getElementById('watchHistoryButton');
+    const watchHistoryModal = document.getElementById('watchHistoryModal');
+    const watchHistoryList = document.getElementById('watchHistoryList');
+    const closeWatchHistoryButton = watchHistoryModal.querySelector('.close-button');
+
+    // Show modal
+    watchHistoryButton.addEventListener('click', () => {
+        renderWatchHistory();
+        watchHistoryModal.style.display = 'block';
+    });
+    // Hide modal
+    closeWatchHistoryButton.addEventListener('click', () => {
+        watchHistoryModal.style.display = 'none';
+    });
+    window.addEventListener('click', (event) => {
+        if (event.target === watchHistoryModal) {
+            watchHistoryModal.style.display = 'none';
+        }
+    });
     // Use a public CORS proxy instead of a local server
     const apiUrl = 'https://api.yzzy-api.com/inc/api_mac10.php';
     // Cors proxies options (if one fails, will try the next)
@@ -1113,6 +1125,58 @@ updateBodyScrollLock();
         }
     }
 
+    // --- Watch History Functions ---
+    function getWatchHistory() {
+        return JSON.parse(localStorage.getItem('watchHistory') || '[]');
+    }
+    function addToWatchHistory(videoId, episodeName) {
+        const history = getWatchHistory();
+        const timestamp = new Date().toISOString();
+        // Avoid duplicate consecutive entries
+        if (history.length > 0) {
+            const last = history[history.length - 1];
+            if (last.videoId === videoId && last.episodeName === episodeName) return;
+        }
+        history.push({ videoId, episodeName, timestamp });
+        // Limit history to 100 items
+        if (history.length > 100) history.shift();
+        localStorage.setItem('watchHistory', JSON.stringify(history));
+    }
+    async function renderWatchHistory() {
+        const history = getWatchHistory().slice().reverse(); // Show latest first
+        if (history.length === 0) {
+            watchHistoryList.innerHTML = '<p>No watch history yet.</p>';
+            return;
+        }
+        // Fetch video details for all unique videoIds
+        const uniqueIds = [...new Set(history.map(item => item.videoId))];
+        let videoData = {};
+        if (uniqueIds.length > 0) {
+            const data = await fetchData({ ac: 'detail', ids: uniqueIds.join(',') });
+            if (data && data.list) {
+                data.list.forEach(video => {
+                    videoData[video.vod_id] = video;
+                });
+            }
+        }
+        watchHistoryList.innerHTML = '';
+        history.forEach(item => {
+            const video = videoData[item.videoId];
+            const div = document.createElement('div');
+            div.className = 'watch-history-item';
+            if (video) {
+                div.innerHTML = `<strong>${video.vod_name}</strong> - <em>${item.episodeName}</em> <span style='color:gray;font-size:0.9em;'>(${new Date(item.timestamp).toLocaleString()})</span>`;
+                div.style.cursor = 'pointer';
+                div.onclick = () => {
+                    showVideoDetails(item.videoId);
+                    watchHistoryModal.style.display = 'none';
+                };
+            } else {
+                div.textContent = `${item.videoId} - ${item.episodeName}`;
+            }
+            watchHistoryList.appendChild(div);
+        });
+    }
     // --- Initial Load ---
     async function initialize() {
         await loadCategories(); // Load categories first
