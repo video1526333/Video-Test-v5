@@ -15,12 +15,14 @@
 </head>
 <body>
 
-    <div class="container">
+    <div id="app">
+      <div class="container">
         <header>
             <h1>Video Portal</h1>
             <div class="search-container">
                 <!-- Hamburger menu removed for simplicity -->
-<input type="text" id="searchInput" placeholder="Search videos">
+<input type="text" id="searchInput" placeholder="Search videos" v-model="search">
+<span style="margin-left:1em; color:#42b983">{{ demoMessage }}</span>
 <button id="searchButton">Search</button>
 <button id="settingsButton" class="settings-button">⚙️</button>
             </div>
@@ -40,6 +42,9 @@
             </div>
         </main>
     </div>
+    <!-- End container -->
+    </div>
+    <!-- End #app -->
 
     <!-- Video Detail Modal -->
     <div id="videoDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDescription">
@@ -126,6 +131,21 @@
         <button id="mobileWatchListButton" class="bottom-nav-button">Watch List</button>
     </div>
 
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="script.js"></script>
+    
+    <!-- Vue app logic -->
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            search: '',
+            demoMessage: 'Welcome to Video Portal with Vue.js!'
+          }
+        }
+      }).mount('#app');
+    </script>
 </body>
 </html>
