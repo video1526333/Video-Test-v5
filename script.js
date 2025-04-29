@@ -37,26 +37,31 @@ function isEpisodeWatched(videoId, episodeName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Watch History Modal Elements
+    // --- Watch History Modal Logic ---
     const watchHistoryButton = document.getElementById('watchHistoryButton');
     const watchHistoryModal = document.getElementById('watchHistoryModal');
     const watchHistoryList = document.getElementById('watchHistoryList');
-    const closeWatchHistoryButton = watchHistoryModal.querySelector('.close-button');
+    const closeWatchHistoryButton = watchHistoryModal ? watchHistoryModal.querySelector('.close-button') : null;
 
-    // Show modal
-    watchHistoryButton.addEventListener('click', () => {
-        renderWatchHistory();
-        watchHistoryModal.style.display = 'block';
-    });
-    // Hide modal
-    closeWatchHistoryButton.addEventListener('click', () => {
-        watchHistoryModal.style.display = 'none';
-    });
-    window.addEventListener('click', (event) => {
-        if (event.target === watchHistoryModal) {
-            watchHistoryModal.style.display = 'none';
-        }
-    });
+    if (watchHistoryButton && watchHistoryModal && watchHistoryList && closeWatchHistoryButton) {
+        watchHistoryButton.addEventListener('click', () => {
+            renderWatchHistory();
+            watchHistoryModal.classList.add('open');
+            if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
+        });
+        closeWatchHistoryButton.addEventListener('click', () => {
+            watchHistoryModal.classList.remove('open');
+            if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
+        });
+        window.addEventListener('click', (event) => {
+            if (event.target === watchHistoryModal) {
+                watchHistoryModal.classList.remove('open');
+                if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
+            }
+        });
+    }
+
+
     // Use a public CORS proxy instead of a local server
     const apiUrl = 'https://api.yzzy-api.com/inc/api_mac10.php';
     // Cors proxies options (if one fails, will try the next)
