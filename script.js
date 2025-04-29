@@ -1148,40 +1148,52 @@ updateBodyScrollLock();
         localStorage.setItem('watchHistory', JSON.stringify(history));
     }
     async function renderWatchHistory() {
-        const history = getWatchHistory().slice().reverse(); // Show latest first
-        if (history.length === 0) {
-            watchHistoryList.innerHTML = '<p>No watch history yet.</p>';
-            return;
-        }
-        // Fetch video details for all unique videoIds
-        const uniqueIds = [...new Set(history.map(item => item.videoId))];
-        let videoData = {};
-        if (uniqueIds.length > 0) {
-            const data = await fetchData({ ac: 'detail', ids: uniqueIds.join(',') });
-            if (data && data.list) {
-                data.list.forEach(video => {
-                    videoData[video.vod_id] = video;
-                });
-            }
-        }
-        watchHistoryList.innerHTML = '';
-        history.forEach(item => {
-            const video = videoData[item.videoId];
-            const div = document.createElement('div');
-            div.className = 'watch-history-item';
-            if (video) {
-                div.innerHTML = `<strong>${video.vod_name}</strong> - <em>${item.episodeName}</em> <span style='color:gray;font-size:0.9em;'>(${new Date(item.timestamp).toLocaleString()})</span>`;
-                div.style.cursor = 'pointer';
-                div.onclick = () => {
-                    showVideoDetails(item.videoId);
-                    watchHistoryModal.style.display = 'none';
-                };
-            } else {
-                div.textContent = `${item.videoId} - ${item.episodeName}`;
-            }
-            watchHistoryList.appendChild(div);
-        });
+    const MAX_HISTORY = 20;
+    const fullHistory = getWatchHistory().slice().reverse(); // Show latest first
+    const history = fullHistory.slice(0, MAX_HISTORY);
+    if (history.length === 0) {
+        watchHistoryList.innerHTML = '<p>No watch history yet.</p>';
+        return;
     }
+    // Fetch video details for only the latest MAX_HISTORY unique videoIds
+    const uniqueIds = [...new Set(history.map(item => item.videoId))];
+    let videoData = {};
+    if (uniqueIds.length > 0) {
+        const data = await fetchData({ ac: 'detail', ids: uniqueIds.join(',') });
+        if (data && data.list) {
+            data.list.forEach(video => {
+                videoData[video.vod_id] = video;
+            });
+        }
+    }
+    watchHistoryList.innerHTML = '';
+    history.forEach(item => {
+        const video = videoData[item.videoId];
+        const div = document.createElement('div');
+        div.className = 'watch-history-item';
+        if (video) {
+            div.innerHTML = `<strong>${video.vod_name}</strong> - <em>${item.episodeName}</em> <span style='color:gray;font-size:0.9em;'>(${new Date(item.timestamp).toLocaleString()})</span>`;
+            div.style.cursor = 'pointer';
+            div.onclick = () => {
+                showVideoDetails(item.videoId);
+                watchHistoryModal.classList.remove('open');
+                if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
+            };
+        } else {
+            div.textContent = `${item.videoId} - ${item.episodeName}`;
+        }
+        watchHistoryList.appendChild(div);
+    });
+    // Show a note if there are more entries
+    if (fullHistory.length > MAX_HISTORY) {
+        const moreDiv = document.createElement('div');
+        moreDiv.style.color = 'gray';
+        moreDiv.style.textAlign = 'center';
+        moreDiv.style.marginTop = '1em';
+        moreDiv.textContent = `Only the latest ${MAX_HISTORY} entries are shown.`;
+        watchHistoryList.appendChild(moreDiv);
+    }
+}
     // --- Initial Load ---
     async function initialize() {
         await loadCategories(); // Load categories first
