@@ -793,26 +793,6 @@ document.addEventListener('DOMContentLoaded', () => {
              }
          } catch (err) {
              console.error('Failed to copy link: ', err);
-                        link.classList.add('watched');
-                    }
-                    // If this is an m3u8 link, set up the event handler
-                    if (isM3u8) {
-                        link.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            playM3u8Video(url, this);
-                        });
-                    } else {
-                        // For non-m3u8 links, we'll still open in a new tab
-                        link.target = '_blank';
-                        link.href = url;
-                    }
-                });
-            }
-        }
-         // Show player modal
-         videoPlayerModal.classList.add('open');
-
-         // Clean up any previous HLS instance
          if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
          videoPlayer.style.display = 'block';
 
