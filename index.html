@@ -21,25 +21,32 @@
             <h1>Video Portal</h1>
             <div class="search-container">
                 <!-- Hamburger menu removed for simplicity -->
-<input type="text" id="searchInput" placeholder="Search videos" v-model="search">
+<input type="text" id="searchInput" placeholder="Search videos" v-model="search" @keyup.enter="searchVideos">
 <span style="margin-left:1em; color:#42b983">{{ demoMessage }}</span>
-<button id="searchButton">Search</button>
+<button id="searchButton" @click="searchVideos">Search</button>
 <button id="settingsButton" class="settings-button">⚙️</button>
             </div>
         </header>
 
         <nav id="categoryNav">
             <ul id="categoryList">
-                <!-- Categories will be loaded here -->
-                <li>Loading categories...</li>
-            </ul>
+  <li v-for="cat in categories" :key="cat.type_id || cat.id" :class="{ active: selectedCategory === (cat.type_id || cat.id) }" @click="selectCategory(cat.type_id || cat.id)">
+    {{ cat.type_name || cat.name }}
+  </li>
+</ul>
         </nav>
 
         <main>
-            <div id="loadingIndicator">Loading videos...</div>
-            <div id="videoGrid">
-                <!-- Video cards will be loaded here -->
-            </div>
+            <div v-if="loading" id="loadingIndicator">Loading videos...</div>
+<div id="videoGrid">
+  <div v-if="!loading && videos.length === 0">No videos found.</div>
+  <div v-for="video in videos" :key="video.vod_id" class="video-card">
+    <img :src="getValidImageUrl(video.vod_pic)" :alt="video.vod_name" @error="handleImgError($event)">
+    <h3>{{ video.vod_name || 'No Title' }}</h3>
+    <p>{{ video.vod_remarks }}</p>
+    <!-- Card actions (play/share) will be migrated in a later phase -->
+  </div>
+</div>
         </main>
     </div>
     <!-- End container -->
@@ -135,15 +142,98 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="script.js"></script>
     
-    <!-- Vue app logic -->
+    <!-- Vue app logic: Phase 1 migration for search, categories, video grid -->
     <script>
+      const apiUrl = 'https://api.yzzy-api.com/inc/api_mac10.php';
+      const corsProxies = [
+        'https://corsproxy.io/?',
+        'https://cors.eu.org/',
+        'https://thingproxy.freeboard.io/fetch/?url=',
+        'https://api.allorigins.win/raw?url=',
+        'https://api.allorigins.cf/raw?url=',
+        'https://api.allorigins.tk/raw?url=',
+        'https://api.codetabs.com/v1/proxy?quest=',
+        'https://yacdn.org/proxy/',
+        'https://cors.bridged.cc/',
+        'https://cors.sho.sh/',
+        'https://cors.ironproxy.xyz/',
+        'https://norobe-cors-anywhere.herokuapp.com/',
+        'https://corsproxy.github.io/?url=',
+        'https://cors-proxy.elfsight.com/',
+        ''
+      ];
+      function fetchData(params) {
+        // Compose API URL with params
+        let url = apiUrl + '?';
+        Object.keys(params).forEach(key => {
+          url += `${key}=${params[key]}&`;
+        });
+        url = url.slice(0, -1);
+        // Use first proxy for now
+        return fetch(corsProxies[0] + encodeURIComponent(url))
+          .then(res => res.json())
+          .catch(err => { console.error('API fetch error', err); return {}; });
+      }
       const { createApp } = Vue;
       createApp({
         data() {
           return {
             search: '',
-            demoMessage: 'Welcome to Video Portal with Vue.js!'
+            demoMessage: 'Welcome to Video Portal with Vue.js!',
+            categories: [],
+            videos: [],
+            selectedCategory: '',
+            loading: false
           }
+        },
+        methods: {
+          async fetchCategories() {
+            const data = await fetchData({ ac: 'list', pg: 1 });
+            if (data && data.class) {
+              // Add "All" and "Watch List" manually if needed
+              this.categories = [
+                { type_id: '', type_name: 'All' },
+                ...data.class,
+                { id: 'watchlist', name: 'Watch List' }
+              ];
+              // Set default category
+              this.selectedCategory = data.class[0]?.type_id || '';
+            }
+          },
+          async fetchVideos() {
+            this.loading = true;
+            const params = { ac: 'list', pg: 1 };
+            if (this.selectedCategory && this.selectedCategory !== 'watchlist') {
+              params.t = this.selectedCategory;
+            }
+            if (this.search) {
+              params.wd = encodeURIComponent(this.search);
+            }
+            const data = await fetchData(params);
+            this.videos = (data && data.list) ? data.list : [];
+            this.loading = false;
+          },
+          selectCategory(catId) {
+            this.selectedCategory = catId;
+            this.fetchVideos();
+          },
+          searchVideos() {
+            this.fetchVideos();
+          },
+          getValidImageUrl(imageUrl) {
+            // Basic check for valid image URL
+            if (!imageUrl) return '';
+            if (imageUrl.startsWith('http')) return imageUrl;
+            return '';
+          },
+          handleImgError(e) {
+            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22150%22%20height%3D%22225%22%20viewBox%3D%220%200%20150%20225%22%3E%3Crect%20fill%3D%22%23ddd%22%20width%3D%22150%22%20height%3D%22225%22%2F%3E%3Ctext%20fill%3D%22%23666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2216%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
+          }
+        },
+        mounted() {
+          this.fetchCategories().then(() => {
+            this.fetchVideos();
+          });
         }
       }).mount('#app');
     </script>
