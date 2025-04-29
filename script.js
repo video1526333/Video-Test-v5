@@ -793,28 +793,18 @@ document.addEventListener('DOMContentLoaded', () => {
              }
          } catch (err) {
              console.error('Failed to copy link: ', err);
-             showToast('Failed to copy link. Please select and copy manually.', 'error');
-         }
-     }
-     
-     // Function to play m3u8 videos
-     function playM3u8Video(url, linkElement) {
-         // Reset active statuses
-         const allLinks = modalEpisodes.querySelectorAll('a');
-         allLinks.forEach(link => link.classList.remove('active'));
-         if (linkElement) {
-            linkElement.classList.add('active');
-            playingTitle.textContent = `Now Playing: ${linkElement.dataset.name}`;
-            // --- Mark episode as watched ---
-            if (currentVideoId && linkElement.dataset.name) {
-                markEpisodeWatched(currentVideoId, linkElement.dataset.name);
-                // Also update watched styling on all episode links
-                const allLinks = modalEpisodes.querySelectorAll('a');
-                allLinks.forEach(link => {
-                    if (isEpisodeWatched(currentVideoId, link.dataset.name)) {
                         link.classList.add('watched');
+                    }
+                    // If this is an m3u8 link, set up the event handler
+                    if (isM3u8) {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            playM3u8Video(url, this);
+                        });
                     } else {
-                        link.classList.remove('watched');
+                        // For non-m3u8 links, we'll still open in a new tab
+                        link.target = '_blank';
+                        link.href = url;
                     }
                 });
             }
