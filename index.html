@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎬</text></svg>">
+    <!-- PWA Stuff -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1e1e">
+    <!-- Add HLS.js for m3u8 playback -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Video Portal</h1>
+            <div class="search-container">
+                <!-- Hamburger menu removed for simplicity -->
+<input type="text" id="searchInput" placeholder="Search videos">
+<button id="searchButton">Search</button>
+<button id="settingsButton" class="settings-button">⚙️</button>
+            </div>
+        </header>
+
+        <nav id="categoryNav">
+            <ul id="categoryList">
+                <!-- Categories will be loaded here -->
+                <li>Loading categories...</li>
+            </ul>
+        </nav>
+
+        <main>
+            <div id="loadingIndicator">Loading videos...</div>
+            <div id="videoGrid">
+                <!-- Video cards will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Video Detail Modal -->
+    <div id="videoDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDescription">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="modal-poster">
+                <img id="modalPoster" src="" alt="Video Poster">
+            </div>
+            <div class="modal-info">
+                <h2 id="modalTitle">Video Title</h2>
+                <button id="shareButton" class="share-button">Share</button>
+                <button id="addToWatchListButton" class="watchlist-button">Add to Watch List</button>
+                <p><strong>Year:</strong> <span id="modalYear"></span></p>
+                <p><strong>Area:</strong> <span id="modalArea"></span></p>
+                <p><strong>Language:</strong> <span id="modalLang"></span></p>
+                <p><strong>Director:</strong> <span id="modalDirector"></span></p>
+                <p><strong>Actors:</strong> <span id="modalActors"></span></p>
+                <p><strong>Status:</strong> <span id="modalRemarks"></span></p>
+                <p><strong>Description:</strong></p>
+                <div id="modalDescription"></div>
+                <br>
+                <h4>Episodes/Playback:</h4>
+                <div class="modal-episodes">
+                    <div id="modalEpisodes">
+                        <!-- Episode links will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal (New) -->
+    <div id="videoPlayerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playingTitle">
+        <div class="video-modal-content">
+            <span class="close-button">&times;</span>
+            <div class="video-player-container">
+                <!-- HTML5 video element for HLS.js playback -->
+                <video id="videoPlayer" controls preload="auto" style="width:100%; height:100%;"></video>
+            </div>
+            <div class="video-title-container">
+                <h3 id="playingTitle">Now Playing</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Link Modal -->
+    <div id="shareModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+        <div class="modal-content share-modal">
+            <span class="close-button">&times;</span>
+            <h3 id="shareModalTitle">Share Video</h3>
+            <div class="share-content">
+                <input type="text" id="shareLink" readonly>
+                <button id="copyLinkButton">Copy Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer"></div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+        <div class="modal-content settings-modal">
+            <span class="close-button">&times;</span>
+            <h3 id="settingsModalTitle">Settings</h3>
+            <div class="settings-form">
+                <label for="passwordInput">Enter Password:</label>
+                <input type="password" id="passwordInput" placeholder="Password">
+                <button id="submitPassword">Submit</button>
+                <p id="passwordMessage"></p>
+                
+<!-- Export/Import All User Data -->
+<div class="userdata-import-export" style="margin-top:1rem;">
+    <button id="exportAllUserDataButton">Export All Data</button>
+    <input type="file" id="importAllUserDataInput" accept=".json" style="display:none;">
+    <button id="importAllUserDataButton">Import All Data</button>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add bottom navigation bar for mobile watch list -->
+    <div class="bottom-nav">
+        <button id="mobileWatchListButton" class="bottom-nav-button">Watch List</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
