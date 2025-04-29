@@ -30,6 +30,7 @@
 
         <nav id="categoryNav">
             <ul id="categoryList">
+  <!-- Rendered by Vue -->
   <li v-for="cat in categories" :key="cat.type_id || cat.id" :class="{ active: selectedCategory === (cat.type_id || cat.id) }" @click="selectCategory(cat.type_id || cat.id)">
     {{ cat.type_name || cat.name }}
   </li>
@@ -39,6 +40,7 @@
         <main>
             <div v-if="loading" id="loadingIndicator">Loading videos...</div>
 <div id="videoGrid">
+  <!-- Rendered by Vue -->
   <div v-if="!loading && videos.length === 0">No videos found.</div>
   <div v-for="video in videos" :key="video.vod_id" class="video-card">
     <img :src="getValidImageUrl(video.vod_pic)" :alt="video.vod_name" @error="handleImgError($event)">
