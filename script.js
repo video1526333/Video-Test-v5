@@ -265,18 +265,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Helper Functions ---
-    // function showLoading() {
-//     loadingIndicator.style.display = 'block';
-//     isLoading = true;
-// }
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+        isLoading = true;
+    }
 
-// function hideLoading() {
-//     loadingIndicator.style.display = 'none';
-//     isLoading = false;
-// }
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        isLoading = false;
+    }
 
     async function fetchData(params, silent = false) {
-    // if (!silent) showLoading();
+        if (!silent) showLoading();
         // Build query string
         const queryParams = new URLSearchParams(params).toString();
         const targetUrl = `${apiUrl}?${queryParams}`;
@@ -332,8 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-    // if (!silent) hideLoading();
-    return responseData; // Will be null if all proxies failed
+        if (!silent) hideLoading();
+        return responseData; // Will be null if all proxies failed
     }
 
     // --- Core Functions ---
@@ -451,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!append) {
             // Show skeleton cards while loading
-            // videoGrid.innerHTML = '';
+            videoGrid.innerHTML = '';
             for (let i = 0; i < 8; i++) {
                 const skel = document.createElement('div');
                 skel.className = 'video-card skeleton-card';
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Remove skeletons only if not appending
             if (!append) {
-                // videoGrid.innerHTML = '';
+                videoGrid.innerHTML = '';
             }
             data.list.forEach(video => {
                 const card = document.createElement('div');
@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.appendChild(actions);
                 card.appendChild(title);
                 card.appendChild(remarks);
-                // videoGrid.appendChild(card);
+                videoGrid.appendChild(card);
             });
             
             // Show results count for initial search
@@ -944,8 +944,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- The following legacy search/category DOM logic is now handled by Vue and is disabled ---
-    /*
     // Search
     searchButton.addEventListener('click', () => {
         const searchTerm = searchInput.value.trim();
@@ -972,7 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
             searchButton.click(); // Trigger search on Enter key
         }
     });
-    */
 
     // Video card click
     videoGrid.addEventListener('click', (event) => {
@@ -1149,16 +1146,16 @@ updateBodyScrollLock();
     // --- Watch List Functions ---
     async function loadWatchList() {
         // Render saved videos from watchList
-        // videoGrid.innerHTML = '';
+        videoGrid.innerHTML = '';
         if (watchList.length === 0) {
-            // videoGrid.innerHTML = '<p>No videos in your watch list.</p>';
+            videoGrid.innerHTML = '<p>No videos in your watch list.</p>';
             return;
         }
         showToast('Loading your watch list...', 'info');
         const ids = watchList.join(',');
         const data = await fetchData({ ac: 'detail', ids: ids });
         if (!data || !data.list) {
-            // videoGrid.innerHTML = '<p>Failed to load watch list.</p>';
+            videoGrid.innerHTML = '<p>Failed to load watch list.</p>';
             return;
         }
         data.list.forEach(video => {
@@ -1176,7 +1173,7 @@ updateBodyScrollLock();
             card.appendChild(img);
             card.appendChild(title);
             card.appendChild(remarks);
-            // videoGrid.appendChild(card);
+            videoGrid.appendChild(card);
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
