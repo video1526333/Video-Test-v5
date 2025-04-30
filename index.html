@@ -12,19 +12,18 @@
     <meta name="theme-color" content="#1e1e1e">
     <!-- Add HLS.js for m3u8 playback -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <style>
-        /* Style for watched episodes */
-        #modalEpisodes a.watched {
-            color: #888;
-            text-decoration: line-through;
-            position: relative;
-        }
-        #modalEpisodes a.watched::after {
-            content: '✓';
-            margin-left: 5px;
-            color: green;
-        }
-    </style>
+<style>
+.modal-episodes a.watched {
+  color: #aaa !important;
+  text-decoration: line-through;
+  position: relative;
+}
+.modal-episodes a.watched::before {
+  content: "✓ ";
+  color: green;
+  font-weight: bold;
+}
+</style>
 </head>
 <body>
 
