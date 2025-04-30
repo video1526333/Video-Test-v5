@@ -1,3 +1,7 @@
+function getWatchHistory() {
+    return JSON.parse(localStorage.getItem('watchHistory') || '[]');
+}
+
 function getPlaybackPositions() {
     return JSON.parse(localStorage.getItem('playbackPositions') || '{}');
 }
@@ -1151,9 +1155,6 @@ updateBodyScrollLock();
     }
 
 // --- Watch History Functions ---
-function getWatchHistory() {
-    return JSON.parse(localStorage.getItem('watchHistory') || '[]');
-}
 
 function addToWatchHistory(videoId, episodeName) {
     console.log('[DEBUG] addToWatchHistory called with:', videoId, episodeName);
