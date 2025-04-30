@@ -674,6 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
                          // --- Add watched class if already watched ---
                          if (isEpisodeWatched(videoId, name)) {
                              link.classList.add('watched');
+                         } else {
+                             link.classList.remove('watched');
                          }
                          // If this is an m3u8 link, set up the event handler
                          if (isM3u8) {
