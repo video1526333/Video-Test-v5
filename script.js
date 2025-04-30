@@ -1182,16 +1182,6 @@ async function renderWatchHistory() {
     }, 400);
 }
 
-// Clear history button functionality
-const clearHistoryBtn = document.getElementById('clearWatchHistoryBtn');
-if (clearHistoryBtn) {
-    clearHistoryBtn.onclick = function() {
-        if (confirm('Clear all watch history?')) {
-            localStorage.removeItem('watchHistory');
-            renderWatchHistory();
-        }
-    };
-}
 
     // --- Initial Load ---
     async function initialize() {
