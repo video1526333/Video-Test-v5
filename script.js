@@ -1139,10 +1139,7 @@ updateBodyScrollLock();
 function getWatchHistory() {
     return JSON.parse(localStorage.getItem('watchHistory') || '[]');
 }
-function markEpisodeWatched(videoId, episodeName) {
-    console.log('[DEBUG] markEpisodeWatched called with:', videoId, episodeName);
-    addToWatchHistory(videoId, episodeName);
-}
+
 function addToWatchHistory(videoId, episodeName) {
     console.log('[DEBUG] addToWatchHistory called with:', videoId, episodeName);
     const history = getWatchHistory();
