@@ -793,6 +793,36 @@ document.addEventListener('DOMContentLoaded', () => {
              }
          } catch (err) {
              console.error('Failed to copy link: ', err);
+             showToast('Failed to copy link. Please select and copy manually.', 'error');
+         }
+     }
+     
+     // Function to play m3u8 videos
+     function playM3u8Video(url, linkElement) {
+         // Reset active statuses
+         const allLinks = modalEpisodes.querySelectorAll('a');
+         allLinks.forEach(link => link.classList.remove('active'));
+         if (linkElement) {
+            linkElement.classList.add('active');
+            playingTitle.textContent = `Now Playing: ${linkElement.dataset.name}`;
+            // --- Mark episode as watched ---
+            if (currentVideoId && linkElement.dataset.name) {
+                markEpisodeWatched(currentVideoId, linkElement.dataset.name);
+                // Also update watched styling on all episode links
+                const allLinks = modalEpisodes.querySelectorAll('a');
+                allLinks.forEach(link => {
+                    if (isEpisodeWatched(currentVideoId, link.dataset.name)) {
+                        link.classList.add('watched');
+                    } else {
+                        link.classList.remove('watched');
+                    }
+                });
+            }
+        }
+         // Show player modal
+         videoPlayerModal.classList.add('open');
+
+         // Clean up any previous HLS instance
          if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
          videoPlayer.style.display = 'block';
 
@@ -1131,58 +1161,51 @@ function addToWatchHistory(videoId, episodeName) {
 }
 async function renderWatchHistory() {
     const MAX_HISTORY = 20;
-    const loader = document.getElementById('watchHistoryLoader');
-    const list = document.getElementById('watchHistoryList');
-    loader.style.display = 'block';
-    list.innerHTML = '';
-    // Simulate loading delay for UX
-    setTimeout(async () => {
-        const fullHistory = getWatchHistory().slice().reverse();
-        const history = fullHistory.slice(0, MAX_HISTORY);
-        loader.style.display = 'none';
-        if (history.length === 0) {
-            list.innerHTML = '<div class="empty-history">No watch history yet.<br>Start watching to see your history here.</div>';
-            return;
+    const fullHistory = getWatchHistory().slice().reverse(); // Show latest first
+    const history = fullHistory.slice(0, MAX_HISTORY);
+    if (history.length === 0) {
+        watchHistoryList.innerHTML = '<p>No watch history yet.</p>';
+        return;
+    }
+    // Fetch video details for only the latest MAX_HISTORY unique videoIds
+    const uniqueIds = [...new Set(history.map(item => item.videoId))];
+    let videoData = {};
+    if (uniqueIds.length > 0) {
+        const data = await fetchData({ ac: 'detail', ids: uniqueIds.join(',') });
+        if (data && data.list) {
+            data.list.forEach(video => {
+                videoData[video.vod_id] = video;
+            });
         }
-        // Fetch video details for only the latest MAX_HISTORY unique videoIds
-        const uniqueIds = [...new Set(history.map(item => item.videoId))];
-        let videoData = {};
-        if (uniqueIds.length > 0) {
-            const data = await fetchData({ ac: 'detail', ids: uniqueIds.join(',') });
-            if (data && data.list) {
-                data.list.forEach(video => {
-                    videoData[video.vod_id] = video;
-                });
-            }
+    }
+    watchHistoryList.innerHTML = '';
+    history.forEach(item => {
+        const video = videoData[item.videoId];
+        const div = document.createElement('div');
+        div.className = 'watch-history-item';
+        if (video) {
+            div.innerHTML = `<strong>${video.vod_name}</strong> - <em>${item.episodeName}</em> <span style='color:gray;font-size:0.9em;'>(${new Date(item.timestamp).toLocaleString()})</span>`;
+            div.style.cursor = 'pointer';
+            div.onclick = () => {
+                showVideoDetails(item.videoId);
+                watchHistoryModal.classList.remove('open');
+                if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
+            };
+        } else {
+            div.textContent = `${item.videoId} - ${item.episodeName}`;
         }
-        list.innerHTML = '';
-        history.forEach(item => {
-            const entry = document.createElement('div');
-            entry.className = 'history-entry';
-            if (videoData[item.videoId]) {
-                entry.innerHTML = `<div class="history-title">${videoData[item.videoId].vod_name} <span class="history-ep">${item.episodeName}</span></div><div class="history-meta">${formatDateTime(item.timestamp)} <button class="play-history-btn" title="Play">▶️</button></div>`;
-                entry.querySelector('.play-history-btn').onclick = (e) => {
-                    e.stopPropagation();
-                    showVideoDetails(item.videoId);
-                    watchHistoryModal.classList.remove('open');
-                    if (typeof updateBodyScrollLock === 'function') updateBodyScrollLock();
-                };
-            } else {
-                entry.innerHTML = `<div class="history-title">${item.videoId} - ${item.episodeName}</div><div class="history-meta">${formatDateTime(item.timestamp)}</div>`;
-            }
-            list.appendChild(entry);
-        });
-        // Show a note if there are more entries
-        if (fullHistory.length > MAX_HISTORY) {
-            const moreDiv = document.createElement('div');
-            moreDiv.className = 'history-note';
-            moreDiv.textContent = `Only the latest ${MAX_HISTORY} entries are shown.`;
-            list.appendChild(moreDiv);
-        }
-    }, 400);
+        watchHistoryList.appendChild(div);
+    });
+    // Show a note if there are more entries
+    if (fullHistory.length > MAX_HISTORY) {
+        const moreDiv = document.createElement('div');
+        moreDiv.style.color = 'gray';
+        moreDiv.style.textAlign = 'center';
+        moreDiv.style.marginTop = '1em';
+        moreDiv.textContent = `Only the latest ${MAX_HISTORY} entries are shown.`;
+        watchHistoryList.appendChild(moreDiv);
+    }
 }
-
-
     // --- Initial Load ---
     async function initialize() {
         await loadCategories(); // Load categories first
